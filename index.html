@@ -61,7 +61,7 @@
       position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
       border-radius: 4px 4px 0 0; z-index: 1;
     }
-    .stem.grow { height: 250px; transition: height 2.5s ease-out; }
+    .stem.grow { height: 180px; transition: height 2.5s ease-out; }
 
     .leaf {
       position: absolute; width: 50px; height: 25px; background: #43a047;
@@ -85,7 +85,7 @@
     }
 
     .bud {
-      position: absolute; bottom: 275px; left: 50%; transform: translateX(-50%); z-index: 3;
+      position: absolute; bottom: 205px; left: 50%; transform: translateX(-50%); z-index: 3;
       opacity: 0; display: flex; align-items: flex-end;
     }
     .bud.show { opacity: 1; }
@@ -99,7 +99,7 @@
     }
     .bud-inner .p1 { background: #c2185b; left: 0px; transform: rotate(0deg); }
     .bud-inner .p2 { background: #c2185b; left: 0px; transform: rotate(0deg); }
-    .bud-inner .p3 { background: #c2185b; left: 0px; }
+    .bud-inner .p3 { background: #c2185b; left: 0px }
     .bud-inner .p4 { background: #c2185b; left: 0px; transform: rotate(0deg); }
     .bud-inner .p5 { background: #c2185b; left: 0px; transform: rotate(0deg); }
 
@@ -108,6 +108,24 @@
     .bud-inner.bloom .p3 { transform: rotate(0deg) scale(3.1); background: #f48fb1; }
     .bud-inner.bloom .p4 { transform: rotate(15deg) scale(3); background: #e91e63; }
     .bud-inner.bloom .p5 { transform: rotate(35deg) scale(3); background: #d81b60; }
+
+    .firework {
+      position: absolute; width: 6px; height: 6px; border-radius: 50%;
+      pointer-events: none; z-index: 20;
+    }
+    @keyframes fireworkBurst {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+    }
+
+    .flower-rain {
+      position: absolute; font-size: 1.4rem; pointer-events: none; z-index: 15;
+      animation: flowerFall linear forwards; opacity: 0;
+    }
+    @keyframes flowerFall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0.6; }
+    }
 
     .greeting-text {
       position: absolute; top: 30px; left: 0; right: 0; text-align: center;
@@ -160,6 +178,8 @@
   </div>
 
   <script>
+    const flowers = ['\uD83C\uDF38', '\uD83C\uDF3A', '\uD83C\uDF37', '\uD83C\uDF39', '\u2744\uFE0F', '\uD83C\uDF3C'];
+
     function handleSubmit() {
       const name = document.getElementById('name').value.trim();
       if (!name) {
@@ -168,6 +188,44 @@
       }
       document.getElementById('card').classList.add('hide');
       setTimeout(() => startAnimation(name), 700);
+    }
+
+    function spawnFirework(scene) {
+      const side = Math.random() > 0.5 ? 'left' : 'right';
+      const x = side === 'left' ? Math.random() * 40 : window.innerWidth - Math.random() * 40 - 40;
+      const y = Math.random() * window.innerHeight * 0.6 + 60;
+      const colors = ['#ff6b9d', '#ff4757', '#ffbc00', '#ff9ff3', '#48dbfb', '#f368e0', '#ff9f43'];
+      const count = 12 + Math.floor(Math.random() * 8);
+
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'firework';
+        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.3;
+        const dist = 40 + Math.random() * 60;
+        p.style.cssText = `
+          left:${x}px; top:${y}px;
+          background:${colors[Math.floor(Math.random() * colors.length)]};
+          width:${4 + Math.random() * 4}px; height:${4 + Math.random() * 4}px;
+          --tx:${Math.cos(angle) * dist}px; --ty:${Math.sin(angle) * dist}px;
+          animation:fireworkBurst ${0.6 + Math.random() * 0.4}s ease-out forwards;
+        `;
+        scene.appendChild(p);
+        setTimeout(() => p.remove(), 1200);
+      }
+    }
+
+    function spawnFlowerRain(scene) {
+      const el = document.createElement('div');
+      el.className = 'flower-rain';
+      const size = 1 + Math.random() * 1.2;
+      el.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+      el.style.cssText = `
+        left:${Math.random() * 100}vw; font-size:${size}rem;
+        animation-duration:${4 + Math.random() * 5}s;
+        animation-delay:${Math.random() * 2}s;
+      `;
+      scene.appendChild(el);
+      setTimeout(() => el.remove(), 12000);
     }
 
     function startAnimation(name) {
@@ -214,6 +272,13 @@ Happy 1st Monthsary My Luv
 P.S "Can I Know Your Real Name Na?? T T"`;
         poem.classList.add('show');
       }, 5000);
+
+      setInterval(() => spawnFirework(scene), 1000);
+      spawnFirework(scene);
+      spawnFirework(scene);
+
+      setInterval(() => spawnFlowerRain(scene), 350);
+      for (let i = 0; i < 5; i++) setTimeout(() => spawnFlowerRain(scene), i * 400);
     }
   </script>
 </body>
